@@ -1,0 +1,14 @@
+# 工具与编辑器元数据
+.reasonix/
+.workbuddy/
+.idea/
+.vscode/
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+
+# 本地临时文件
+*.tmp
