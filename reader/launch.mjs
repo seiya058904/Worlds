@@ -14,14 +14,14 @@ async function openBrowser() {
 try {
   let existing;
   try {
-    const response = await fetch(`${address}/api/worlds`, { signal: AbortSignal.timeout(1500) });
+    const response = await fetch(`${address}/api/worlds?refresh=1`, { signal: AbortSignal.timeout(10000) });
     existing = response.ok ? await response.json() : { app: 'other' };
   } catch (error) {
     if (error.name === 'TimeoutError' || error.name === 'SyntaxError') existing = { app: 'other' };
   }
   if (existing) {
     if (existing.app !== 'worlds-reader' || existing.identity !== identity) throw new Error('4175 端口已被其他程序占用，请先关闭该程序，再打开阅读器。');
-    console.log(`Worlds 已在运行：${address}`);
+    console.log(`Worlds 已在运行，已同步最新本地文档：${address}`);
     await openBrowser();
   } else {
     const { createServer } = await import('vite');

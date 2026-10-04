@@ -7,6 +7,43 @@ import { test } from 'node:test';
 import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { worldsPlugin } from '../server/worlds-plugin.ts';
+import { parseWorld } from '../src/content.ts';
+
+test('重新打开时主动扫描磁盘，即使遗漏文件事件也能更新正文和章节', async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), 'worlds-reader-reopen-'));
+  const document = path.join(directory, '测试.md');
+  const added = path.join(directory, '新增.md');
+  await writeFile(document, '# 测试\n\n## 旧章\n旧正文\n');
+  const server = await createServer({ configFile: false, root: fileURLToPath(new URL('..', import.meta.url)), plugins: [worldsPlugin(directory)], server: { host: '127.0.0.1', port: 0 }, logLevel: 'silent' });
+  try {
+    await server.listen();
+    const { port } = server.httpServer!.address() as { port: number };
+    const origin = `http://127.0.0.1:${port}`;
+    const initial = await (await fetch(`${origin}/api/worlds`)).json();
+    // Simulate a missed filesystem event without touching the author's documents.
+    await server.watcher.close();
+    await writeFile(document, '# 测试\n\n## 修改章\n最新正文\n\n## 新章\n### 小节\n新增段落\n');
+    await writeFile(added, '# 新增世界\n\n## 开始\n内容\n');
+    assert.equal((await (await fetch(`${origin}/api/worlds`)).json()).revision, initial.revision);
+    assert.equal((await fetch(`${origin}/api/worlds?refresh=1`, { headers: { Origin: 'https://unrelated.example' } })).status, 403);
+    assert.equal((await fetch(`${origin}/api/worlds?refresh=1`, { method: 'POST' })).status, 405);
+    const refreshed = await (await fetch(`${origin}/api/worlds?refresh=1`)).json();
+    assert.notEqual(refreshed.revision, initial.revision);
+    assert.equal(refreshed.identity, initial.identity);
+    assert.equal(refreshed.worlds.length, 2);
+    const source = await (await fetch(`${origin}/api/worlds/${encodeURIComponent('测试')}`)).json();
+    assert.ok(source.markdown.includes('最新正文'));
+    assert.ok(!source.markdown.includes('旧正文'));
+    const parsed = parseWorld(source);
+    assert.deepEqual(parsed.chapters.map(chapter => chapter.title), ['开篇', '修改章', '新章']);
+    assert.equal(parsed.chapters.at(-1)!.sections.find(section => section.depth === 3)?.title, '小节');
+  } finally {
+    await server.close();
+    await unlink(document);
+    await unlink(added).catch(error => { if (error.code !== 'ENOENT') throw error; });
+    await rmdir(directory);
+  }
+});
 
 test('临时副本文档与地图的新增、修改、删除及文件事件同步；接口只读且限制资源范围', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'worlds-reader-test-'));

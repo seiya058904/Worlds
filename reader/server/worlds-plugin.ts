@@ -87,7 +87,7 @@ export function worldsPlugin(directory: string): Plugin {
     }
   }
 
-  function respond(req: IncomingMessage, res: ServerResponse, next: () => void) {
+  async function respond(req: IncomingMessage, res: ServerResponse, next: () => void) {
     if (!req.url?.startsWith('/api/')) return next();
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -98,9 +98,12 @@ export function worldsPlugin(directory: string): Plugin {
     if (req.method !== 'GET' && req.method !== 'HEAD') return json(405, { error: '此阅读器仅支持读取。' });
     const origin = req.headers.origin;
     if (origin && origin !== `http://${req.headers.host}`) return json(403, { error: '仅允许本机阅读器访问。' });
+    let url: URL;
+    try { url = new URL(req.url, 'http://127.0.0.1'); } catch { return json(400, { error: '地址无效。' }); }
+    const { pathname } = url;
+    // Reopening the launcher reconciles directly with disk, even if a file event was missed.
+    if (pathname === '/api/worlds' && url.searchParams.get('refresh') === '1') await refresh();
     if (readError) return json(503, { error: '暂时无法读取本地文档，稍后重试。' });
-    let pathname: string;
-    try { pathname = new URL(req.url, 'http://127.0.0.1').pathname; } catch { return json(400, { error: '地址无效。' }); }
     if (pathname === '/api/worlds') {
       return json(200, { app: 'worlds-reader', identity, revision: snapshot.revision, worlds: snapshot.worlds.map(({ markdown: _markdown, ...info }) => info) });
     }
