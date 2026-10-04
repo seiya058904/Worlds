@@ -4,14 +4,19 @@
 
 Worlds is a private multi-worldbuilding Markdown notebook, maintained with Git. The worldbuilding itself is the project; do not turn it into a novel-production system. The author owns final canon decisions. AI acts as an editor, organizer, analyst, and worldbuilding assistant.
 
+The local night-mode web reader is a read-only presentation of this notebook. Markdown and its referenced maps remain the only content source. Keep app code separate from world content, and do not add web editing, remote hosting, or publishing without an explicit request.
+
 ## Repository structure
 
 - `README.md` explains the project and indexes the worlds.
 - `worlds/<world-name>.md` contains one complete world per Markdown file. Keep characters, geography, history, factions, timelines, items, civilizations, technology, and power systems inside that world file as readable sections.
 - `INBOX.md` is the only intentionally unstructured inbox for notes whose world or status is uncertain.
 - `.reasonix/` and `.workbuddy/` are local editor metadata and are ignored by Git.
+- `reader/` contains the React/TypeScript/Vite reader, its local document service and tests. `启动阅读器.cmd` launches it on Windows at `http://127.0.0.1:4175`. App dependencies and build output are ignored by Git.
 
 Do not create split directories such as `characters/`, `history/`, `geography/`, `factions/`, `timeline/`, `lore/`, `archive/`, `resources/`, `plans/`, or `database/`. Do not introduce databases, scripts, state machines, workflows, templates, or JSON/YAML data structures for world content.
+
+The reader may use normal app source files, manifests, scripts, API responses and browser-local preferences inside its own scope. Do not encode a duplicate body of world content in these files. “典藏” and “持续迭代” are reader labels, not canon changes.
 
 ## Canon and editing rules
 
@@ -24,13 +29,15 @@ Do not create split directories such as `characters/`, `history/`, `geography/`,
 
 ## Validation and commands
 
-This is a Markdown-plus-Git repository with no dependency manifest, build system, test suite, linter, type checker, or CI/CD configuration. There is no project-specific build or test command. For content changes, inspect the affected Markdown from start to finish, verify headings and canon boundaries, and use the relevant Git checks:
+For world content changes, inspect the affected Markdown from start to finish, verify headings and canon boundaries, and use the relevant Git checks:
 
 ```powershell
 git diff --check
 git status --short
 git diff --name-only
 ```
+
+For reader changes, run `npm test` and `npm run build` from `reader/`, then verify affected interactions in a real browser. Check desktop and narrow-screen layout for visual changes. Use temporary document copies for synchronization tests; never alter the author's world files as test fixtures. Confirm source Markdown and map hashes when reorganizing or renaming files. There is no CI/CD or remote deployment configuration.
 
 Read and write text as UTF-8. Do not open or output `.env`, `.dev.vars`, private keys, keystores, tokens, cookies, or other credentials.
 

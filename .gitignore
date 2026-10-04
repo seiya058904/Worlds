@@ -12,3 +12,7 @@ Desktop.ini
 
 # 本地临时文件
 *.tmp
+
+# 本地阅读器依赖与构建产物
+reader/node_modules/
+reader/dist/

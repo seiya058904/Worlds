@@ -1,0 +1,2 @@
+# World documents use Markdown's two trailing spaces for intentional hard line breaks.
+worlds/*.md whitespace=-blank-at-eol
