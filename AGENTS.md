@@ -39,6 +39,8 @@ git diff --name-only
 
 For reader changes, run `npm test` and `npm run build` from `reader/`, then verify affected interactions in a real browser. Check desktop and narrow-screen layout for visual changes. Use temporary document copies for synchronization tests; never alter the author's world files as test fixtures. Confirm source Markdown and map hashes when reorganizing or renaming files. There is no CI/CD or remote deployment configuration.
 
+`reader/server/worlds-plugin.ts` owns document/map scanning and watcher notifications. Keep scans serial: file events and explicit refreshes record invalidation immediately, including while a scan is active; coalesce bursts into a trailing scan until current invalidations are covered. Debouncing must not discard changes. On server close, stop scheduling/publishing and detach watchers and timers.
+
 Read and write text as UTF-8. Do not open or output `.env`, `.dev.vars`, private keys, keystores, tokens, cookies, or other credentials.
 
 ## Git and collaboration
