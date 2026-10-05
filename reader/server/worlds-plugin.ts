@@ -22,13 +22,14 @@ export function worldsPlugin(directory: string): Plugin {
   let identity = '';
   let snapshot: Snapshot;
   let scanPromise: Promise<Snapshot> | undefined;
+  let generation = 0;
+  let scannedGeneration = -1;
+  let closed = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   let server: ViteDevServer;
   let readError = false;
 
-  async function scan(): Promise<Snapshot> {
-    if (scanPromise) return scanPromise;
-    scanPromise = (async () => {
+  async function readSnapshot(): Promise<Snapshot> {
       const assets = new Map<string, { bytes: Buffer; type: string; revision: string }>();
       const entries = await readdir(root, { withFileTypes: true });
       const worlds = await Promise.all(entries.filter(entry => entry.isFile() && !entry.name.startsWith('.') && entry.name.endsWith('.md')).map(async entry => {
@@ -70,18 +71,36 @@ export function worldsPlugin(directory: string): Plugin {
         return (ai < 0 ? ORDER.length : ai) - (bi < 0 ? ORDER.length : bi) || a.id.localeCompare(b.id, 'zh-CN');
       });
       return { worlds, assets, revision: digest(worlds.map(world => `${world.id}:${world.revision}`).join('\n')) };
-    })();
-    try { return await scanPromise; } finally { scanPromise = undefined; }
   }
 
-  async function refresh() {
+  async function scan(): Promise<Snapshot> {
+    if (!scanPromise) {
+      scanPromise = (async () => {
+        let next: Snapshot;
+        do {
+          const currentGeneration = generation;
+          next = await readSnapshot();
+          scannedGeneration = currentGeneration;
+        } while (!closed && scannedGeneration !== generation);
+        return next;
+      })();
+    }
+    const pending = scanPromise;
+    try { return await pending; } finally { if (scanPromise === pending) scanPromise = undefined; }
+  }
+
+  async function refresh(invalidate = false) {
+    if (closed) return;
+    if (invalidate) generation++;
     try {
       const next = await scan();
+      if (closed) return;
       const changed = next.revision !== snapshot.revision || readError;
       snapshot = next;
       readError = false;
       if (changed) server.ws.send({ type: 'custom', event: 'worlds:changed', data: { revision: snapshot.revision } });
     } catch {
+      if (closed) return;
       readError = true;
       server.ws.send({ type: 'custom', event: 'worlds:unavailable', data: {} });
     }
@@ -102,7 +121,7 @@ export function worldsPlugin(directory: string): Plugin {
     try { url = new URL(req.url, 'http://127.0.0.1'); } catch { return json(400, { error: '地址无效。' }); }
     const { pathname } = url;
     // Reopening the launcher reconciles directly with disk, even if a file event was missed.
-    if (pathname === '/api/worlds' && url.searchParams.get('refresh') === '1') await refresh();
+    if (pathname === '/api/worlds' && url.searchParams.get('refresh') === '1') await refresh(true);
     if (readError) return json(503, { error: '暂时无法读取本地文档，稍后重试。' });
     if (pathname === '/api/worlds') {
       return json(200, { app: 'worlds-reader', identity, revision: snapshot.revision, worlds: snapshot.worlds.map(({ markdown: _markdown, ...info }) => info) });
@@ -136,13 +155,15 @@ export function worldsPlugin(directory: string): Plugin {
       const onChange = (_event: string, file: string) => {
         if (path.dirname(path.resolve(file)) !== root) return;
         if (!file.endsWith('.md') && !IMAGE_TYPES[path.extname(file).toLowerCase()]) return;
+        generation++;
         clearTimeout(timer);
-        timer = setTimeout(refresh, 220);
+        timer = setTimeout(() => { if (scannedGeneration !== generation) void refresh(); }, 220);
       };
       server.watcher.on('all', onChange);
       // Retry transient read errors (for example an editor's atomic save).
-      const retry = setInterval(() => { if (readError) void refresh(); }, 2000);
+      const retry = setInterval(() => { if (readError) void refresh(true); }, 2000);
       server.httpServer?.once('close', () => {
+        closed = true;
         clearInterval(retry);
         clearTimeout(timer);
         server.watcher.off('all', onChange);
