@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, unlink, rmdir } from 'node:fs/promises';
+import filesystem from 'node:fs/promises';
+import { syncBuiltinESMExports } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { setTimeout as pause } from 'node:timers/promises';
@@ -8,6 +10,77 @@ import { createServer } from 'vite';
 import { fileURLToPath } from 'node:url';
 import { worldsPlugin } from '../server/worlds-plugin.ts';
 import { parseWorld } from '../src/content.ts';
+
+for (const trigger of ['watcher', 'refresh']) {
+  test(`${trigger}: saves arriving after Markdown was read trail the blocked scan and coalesce`, async t => {
+    const directory = await mkdtemp(path.join(tmpdir(), 'worlds-reader-trailing-'));
+    const document = path.join(directory, '测试.md');
+    const image = path.join(directory, '地图.png');
+    const body = (value: string) => `# 测试\n\n## 章节\n${value}\n\n![地图](地图.png)\n`;
+    await writeFile(document, body('initial'));
+    await writeFile(image, Buffer.from([1, 2, 3]));
+    const server = await createServer({ configFile: false, root: fileURLToPath(new URL('..', import.meta.url)), plugins: [worldsPlugin(directory)], server: { host: '127.0.0.1', port: 0 }, logLevel: 'silent' });
+    let release!: () => void;
+    let blocked!: () => void;
+    const atImage = new Promise<void>(resolve => { blocked = resolve; });
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    let armed = false, failRead = false, reads = 0;
+    const original = filesystem.readFile;
+    try {
+      await server.listen();
+      const { port } = server.httpServer!.address() as { port: number };
+      const origin = `http://127.0.0.1:${port}`;
+      t.mock.method(filesystem, 'readFile', async (...args: any[]) => {
+        if (String(args[0]) === document) reads++;
+        if (String(args[0]) === image && failRead) throw Object.assign(new Error('temporary read failure'), { code: 'EACCES' });
+        const result = await Reflect.apply(original, filesystem, args);
+        if (String(args[0]) === image && armed) { armed = false; blocked(); await gate; }
+        return result;
+      });
+      syncBuiltinESMExports();
+      await pause(200);
+      async function save(value: string) {
+        await pause(150); // Chokidar coalesces adjacent native changes within its throttle window.
+        const event = new Promise<void>(resolve => { const listener = (file: string) => { if (path.resolve(file) === document) { server.watcher.off('change', listener); resolve(); } }; server.watcher.on('change', listener); });
+        await writeFile(document, body(value));
+        await Promise.race([event, pause(5000).then(() => { throw new Error('watcher did not observe save'); })]);
+      }
+      armed = true;
+      await save('first save');
+      await Promise.race([atImage, pause(5000).then(() => { throw new Error('scan did not reach image I/O'); })]);
+      // The first scan has already consumed Markdown and is awaiting unrelated image I/O.
+      await save('second save');
+      let explicit: Promise<Response> | undefined;
+      if (trigger === 'refresh') explicit = fetch(`${origin}/api/worlds?refresh=1`);
+      for (let index = 0; index < 5; index++) await save(`burst ${index}`);
+      await pause(300); // Debounced requests also arrive while the original scan is blocked.
+      release();
+      if (explicit) assert.equal((await explicit).status, 200);
+      const end = Date.now() + 5000;
+      let source: any;
+      do { source = await (await fetch(`${origin}/api/worlds/${encodeURIComponent('测试')}`)).json(); if (source.markdown.includes('burst 4')) break; await pause(50); } while (Date.now() < end);
+      assert.ok(source.markdown.includes('burst 4'), 'latest body appears without another save or launcher restart');
+      assert.ok(!source.markdown.includes('first save'));
+      await pause(500);
+      assert.equal(reads, 2, 'all blocked invalidations need only one trailing scan');
+      failRead = true;
+      assert.equal((await fetch(`${origin}/api/worlds?refresh=1`)).status, 503);
+      failRead = false;
+      assert.equal((await fetch(`${origin}/api/worlds?refresh=1`)).status, 200);
+      await server.close();
+      const afterClose = reads;
+      server.watcher.emit('all', 'change', document);
+      await pause(300);
+      assert.equal(reads, afterClose, 'closed watcher cannot schedule another scan');
+    } finally {
+      release();
+      await server.close();
+      t.mock.restoreAll();
+      syncBuiltinESMExports();
+      await unlink(document); await unlink(image); await rmdir(directory);
+    }
+  });
+}
 
 test('重新打开时主动扫描磁盘，即使遗漏文件事件也能更新正文和章节', async () => {
   const directory = await mkdtemp(path.join(tmpdir(), 'worlds-reader-reopen-'));
