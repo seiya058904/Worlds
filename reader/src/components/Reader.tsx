@@ -1,15 +1,16 @@
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import type { Chapter, ParsedWorld, Preferences, ReadingPosition } from '../types';
+import type { Chapter, ParsedWorld, Preferences, ReadingPosition, SourceMode } from '../types';
 import type { SyncStatus } from '../useWorlds';
 import { getPosition, getPreferences, savePosition, savePreferences } from '../storage';
 import { Icon } from './Icon';
 import { Sidebar } from './Sidebar';
 import { MarkdownBody } from './MarkdownBody';
 import { PreferencesDialog } from './PreferencesDialog';
+import { paragraphFingerprint, readingAnchor } from '../content';
 const MapViewer = lazy(() => import('./MapViewer'));
 
 export type NavigationTarget = { chapterId?: string; sectionId?: string; sourceOffset?: number; nonce?: number; resume?: boolean };
-export function Reader({ world, chapter, target, status, onLibrary, onSearch, onNavigate }: { world: ParsedWorld; chapter: Chapter; target: NavigationTarget; status: SyncStatus; onLibrary: () => void; onSearch: () => void; onNavigate: (value: NavigationTarget) => void }) {
+export function Reader({ world, chapter, target, status, mode, onLibrary, onSearch, onNavigate }: { world: ParsedWorld; chapter: Chapter; target: NavigationTarget; status: SyncStatus; mode: SourceMode; onLibrary: () => void; onSearch: () => void; onNavigate: (value: NavigationTarget) => void }) {
   const viewport = useRef<HTMLElement>(null);
   const article = useRef<HTMLElement>(null);
   const [preferences, setPreferences] = useState(getPreferences);
@@ -24,7 +25,7 @@ export function Reader({ world, chapter, target, status, onLibrary, onSearch, on
   const restoring = useRef(false);
   const scrollFrame = useRef(0);
   const lastSaved = useRef(0);
-  const identity = useRef({ worldId: world.id, chapterId: chapter.id });
+  const identity = useRef({ worldId: world.id, chapterId: chapter.id, revision: world.revision });
   const handledTarget = useRef(-1);
 
   const capture = useCallback((persist = true) => {
@@ -44,18 +45,25 @@ export function Reader({ world, chapter, target, status, onLibrary, onSearch, on
       block = item;
     }
     const ratio = scroller.scrollHeight > scroller.clientHeight ? scroller.scrollTop / (scroller.scrollHeight - scroller.clientHeight) : 1;
-    currentPosition.current = { chapterId: chapter.id, chapterIndex: chapter.index, sectionId, paragraph: block?.textContent?.replace(/\s+/g, ' ').slice(0, 140) ?? '', offset: block ? scroller.getBoundingClientRect().top - block.getBoundingClientRect().top : 0, ratio };
+    currentPosition.current = { chapterId: chapter.id, chapterIndex: chapter.index, sectionId, paragraph: paragraphFingerprint(block?.textContent ?? ''), offset: block ? scroller.getBoundingClientRect().top - block.getBoundingClientRect().top : 0, ratio };
     setActiveSection(sectionId);
     setProgress(ratio);
     if (persist) savePosition(world.id, currentPosition.current);
   }, [world.id, chapter]);
+
+  useEffect(() => {
+    const beforeUpdate = () => capture();
+    window.addEventListener('worlds:before-update', beforeUpdate);
+    return () => window.removeEventListener('worlds:before-update', beforeUpdate);
+  }, [capture]);
 
   useLayoutEffect(() => {
     const scroller = viewport.current, body = article.current;
     if (!scroller || !body) return;
     restoring.current = true;
     const sameChapter = identity.current.worldId === world.id && identity.current.chapterId === chapter.id;
-    identity.current = { worldId: world.id, chapterId: chapter.id };
+    const contentUpdated = identity.current.worldId === world.id && identity.current.revision !== world.revision;
+    identity.current = { worldId: world.id, chapterId: chapter.id, revision: world.revision };
     const isNewTarget = target.nonce !== undefined && target.nonce !== handledTarget.current;
     if (isNewTarget) handledTarget.current = target.nonce!;
     const saved = sameChapter ? currentPosition.current ?? getPosition(world.id) : getPosition(world.id);
@@ -66,12 +74,14 @@ export function Reader({ world, chapter, target, status, onLibrary, onSearch, on
       const nodes = [...body.querySelectorAll<HTMLElement>('[data-source-offset]')];
       element = nodes.find(node => Number(node.dataset.sourceOffset) === target.sourceOffset) ?? null;
     } else if (explicitTarget && target.sectionId) element = document.getElementById(target.sectionId);
-    else if (!explicitTarget && saved?.chapterId === chapter.id) {
-      element = [...body.querySelectorAll<HTMLElement>('[data-read-block]')].find(node => node.textContent?.replace(/\s+/g, ' ').slice(0, 140) === saved.paragraph) ?? document.getElementById(saved.sectionId);
-      offset = saved.offset;
+    else if (!explicitTarget && saved && (saved.chapterId === chapter.id || contentUpdated || target.resume)) {
+      const blocks = [...body.querySelectorAll<HTMLElement>('[data-read-block]')];
+      const anchor = readingAnchor(saved, blocks.map(node => ({ text: node.textContent ?? '' })), chapter.sections.map(section => section.id));
+      element = anchor.blockIndex >= 0 ? blocks[anchor.blockIndex] : anchor.sectionId ? document.getElementById(anchor.sectionId) : null;
+      offset = anchor.offset;
     }
     if (element) scroller.scrollTop += element.getBoundingClientRect().top - scroller.getBoundingClientRect().top + offset;
-    else scroller.scrollTop = !explicitTarget && saved?.chapterId === chapter.id ? saved.ratio * Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
+    else scroller.scrollTop = !explicitTarget && saved && (saved.chapterId === chapter.id || contentUpdated || target.resume) ? saved.ratio * Math.max(0, scroller.scrollHeight - scroller.clientHeight) : 0;
     const frame = requestAnimationFrame(() => { restoring.current = false; capture(); });
     return () => { cancelAnimationFrame(frame); cancelAnimationFrame(scrollFrame.current); };
   }, [world.revision, world.id, chapter, target.nonce, preferences, capture]);
@@ -104,7 +114,7 @@ export function Reader({ world, chapter, target, status, onLibrary, onSearch, on
       if (narrow) setMobileToc(value => !value);
       else { capture(); setHideSidebar(value => !value); }
     }}><Icon name="panel" size={25} /></button></div></header>
-    <Sidebar key={world.id} world={world} chapter={chapter} activeSection={activeSection} status={status} onChoose={(chapterId, sectionId) => choose({ chapterId, sectionId })} onClose={() => setMobileToc(false)} mobile={mobileToc} hidden={hideSidebar} />
+    <Sidebar key={world.id} world={world} chapter={chapter} activeSection={activeSection} status={status} mode={mode} onChoose={(chapterId, sectionId) => choose({ chapterId, sectionId })} onClose={() => setMobileToc(false)} mobile={mobileToc} hidden={hideSidebar} />
     <main className="reading-scroll" ref={viewport} tabIndex={-1} onScroll={() => {
       cancelAnimationFrame(scrollFrame.current);
       scrollFrame.current = requestAnimationFrame(() => {

@@ -4,7 +4,7 @@
 
 Worlds is a private multi-worldbuilding Markdown notebook, maintained with Git. The worldbuilding itself is the project; do not turn it into a novel-production system. The author owns final canon decisions. AI acts as an editor, organizer, analyst, and worldbuilding assistant.
 
-The local night-mode web reader is a read-only presentation of this notebook. Markdown and its referenced maps remain the only content source. Keep app code separate from world content, and do not add web editing, remote hosting, or publishing without an explicit request.
+The night-mode web reader is a read-only presentation of this notebook, available locally and at `https://seiya058904.github.io/Worlds/`. Markdown and its referenced maps remain the only content source. Keep app code separate from world content. GitHub Pages deployment through the existing workflow is authorized; do not add web editing or other hosting/publishing without an explicit request.
 
 ## Repository structure
 
@@ -12,7 +12,8 @@ The local night-mode web reader is a read-only presentation of this notebook. Ma
 - `worlds/<world-name>.md` contains one complete world per Markdown file. Keep characters, geography, history, factions, timelines, items, civilizations, technology, and power systems inside that world file as readable sections.
 - `INBOX.md` is the only intentionally unstructured inbox for notes whose world or status is uncertain.
 - `.reasonix/` and `.workbuddy/` are local editor metadata and are ignored by Git.
-- `reader/` contains the React/TypeScript/Vite reader, its local document service and tests. `启动阅读器.cmd` launches it on Windows at `http://127.0.0.1:4175`. App dependencies and build output are ignored by Git.
+- `reader/` contains the React/TypeScript/Vite reader, its shared content scanner, local document service, static exporter and tests. `启动阅读器.cmd` launches it on Windows at `http://127.0.0.1:4175`. App dependencies and build output are ignored by Git.
+- `.github/workflows/pages.yml` tests and builds on `main` pushes or manual dispatch, then deploys `reader/dist/` using GitHub Actions Pages source. No `gh-pages` branch is used.
 
 Do not create split directories such as `characters/`, `history/`, `geography/`, `factions/`, `timeline/`, `lore/`, `archive/`, `resources/`, `plans/`, or `database/`. Do not introduce databases, scripts, state machines, workflows, templates, or JSON/YAML data structures for world content.
 
@@ -37,9 +38,13 @@ git status --short
 git diff --name-only
 ```
 
-For reader changes, run `npm test` and `npm run build` from `reader/`, then verify affected interactions in a real browser. Check desktop and narrow-screen layout for visual changes. Use temporary document copies for synchronization tests; never alter the author's world files as test fixtures. Confirm source Markdown and map hashes when reorganizing or renaming files. There is no CI/CD or remote deployment configuration.
+For reader changes, run `npm ci`, `npm test` and `npm run build` from `reader/`, then verify affected interactions in a real browser using the production build (`npm run preview`, port 4176), including desktop and narrow-screen layouts and `/Worlds/` subpath/hash links. Also check the local service for synchronization changes. Use temporary document copies for synchronization tests; never alter the author's world files as test fixtures. Confirm source Markdown and map hashes when reorganizing or renaming files. After an authorized release, wait for the exact commit's Pages Actions run and verify the live site's manifest, document/map bytes and real interactions.
 
-`reader/server/worlds-plugin.ts` owns document/map scanning and watcher notifications. Keep scans serial: file events and explicit refreshes record invalidation immediately, including while a scan is active; coalesce bursts into a trailing scan until current invalidations are covered. Debouncing must not discard changes. On server close, stop scheduling/publishing and detach watchers and timers.
+`reader/server/worlds-snapshot.ts` is the single scanner and revision implementation. Allow only top-level Markdown and explicitly referenced raster images resolved inside `worlds/`; never export arbitrary repository files. `reader/server/static-content.ts` emits generated manifest, source JSON and original map bytes only into build output. No generated body is maintained in source control. Production uses relative base/`BASE_URL` and static content, with no `/api` or GitHub API dependency.
+
+`reader/src/sync.ts` keeps the last successful snapshot in memory, serializes/coalesces refreshes, and commits changed worlds atomically after all loads succeed. Online checks occur every 30 seconds and on focus/visibility/network recovery; local reconciliation occurs every 5 seconds and on HMR events. Unchanged revisions must not reload or reparse documents. Failures must retain readable content and position. Before replacing content, capture the old DOM's reading position; preserve paragraph/section/chapter/index/ratio fallbacks and browser settings.
+
+`reader/server/worlds-plugin.ts` owns local scan scheduling and watcher notifications. Keep scans serial: file events and explicit refreshes record invalidation immediately, including while a scan is active; coalesce bursts into a trailing scan until current invalidations are covered. Debouncing must not discard changes. On server close, stop scheduling/publishing and detach watchers and timers.
 
 Read and write text as UTF-8. Do not open or output `.env`, `.dev.vars`, private keys, keystores, tokens, cookies, or other credentials.
 

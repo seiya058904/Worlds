@@ -1,20 +1,8 @@
-import { createHash } from 'node:crypto';
-import { readFile, readdir, realpath } from 'node:fs/promises';
+import { realpath } from 'node:fs/promises';
 import path from 'node:path';
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkGfm from 'remark-gfm';
-import { toString } from 'mdast-util-to-string';
-import type { RootContent } from 'mdast';
 import type { Plugin, ViteDevServer } from 'vite';
-import type { WorldSource } from '../src/types.ts';
-
-const parser = unified().use(remarkParse).use(remarkGfm);
-const digest = (value: string | Buffer) => createHash('sha256').update(value).digest('hex');
-const IMAGE_TYPES: Record<string, string> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.gif': 'image/gif', '.avif': 'image/avif' };
-const ORDER = ['人界', '西幻世界', '星星联邦', '宋世江湖'];
-type Snapshot = { revision: string; worlds: WorldSource[]; assets: Map<string, { bytes: Buffer; type: string; revision: string }> };
+import { digest, IMAGE_TYPES, manifestFor, readSnapshot, type Snapshot } from './worlds-snapshot.ts';
 
 /** Only this directory's Markdown and explicitly referenced raster images are readable. */
 export function worldsPlugin(directory: string): Plugin {
@@ -29,57 +17,13 @@ export function worldsPlugin(directory: string): Plugin {
   let server: ViteDevServer;
   let readError = false;
 
-  async function readSnapshot(): Promise<Snapshot> {
-      const assets = new Map<string, { bytes: Buffer; type: string; revision: string }>();
-      const entries = await readdir(root, { withFileTypes: true });
-      const worlds = await Promise.all(entries.filter(entry => entry.isFile() && !entry.name.startsWith('.') && entry.name.endsWith('.md')).map(async entry => {
-        const markdown = await readFile(path.join(root, entry.name), 'utf8');
-        const id = entry.name.slice(0, -3);
-        const tree = parser.parse(markdown);
-        const title = toString(tree.children.find(node => node.type === 'heading' && node.depth === 1) ?? { type: 'text', value: id });
-        const references = new Map(tree.children.filter(node => node.type === 'definition').map(node => [node.identifier, node.url]));
-        const images: { url: string; alt: string }[] = [];
-        function visit(node: RootContent) {
-          const url = node.type === 'image' ? node.url : node.type === 'imageReference' ? references.get(node.identifier) : undefined;
-          if (url) images.push({ url, alt: 'alt' in node ? node.alt ?? '' : '' });
-          if ('children' in node) node.children.forEach(child => visit(child as RootContent));
-        }
-        tree.children.forEach(visit);
-        const maps: WorldSource['maps'] = [];
-        for (const image of images) {
-          let name: string;
-          try { name = decodeURIComponent(image.url); } catch { continue; }
-          if (name !== path.basename(name) || name.includes('\\') || name.includes(':') || !IMAGE_TYPES[path.extname(name).toLowerCase()]) continue;
-          try {
-            const resolved = await realpath(path.join(root, name));
-            if (path.dirname(resolved) !== root) continue;
-            let asset = assets.get(name);
-            if (!asset) {
-              const bytes = await readFile(resolved);
-              asset = { bytes, type: IMAGE_TYPES[path.extname(name).toLowerCase()], revision: digest(bytes) };
-              assets.set(name, asset);
-            }
-            maps.push({ url: `/api/assets/${encodeURIComponent(name)}?v=${asset.revision}`, alt: image.alt });
-          } catch (error) {
-            if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
-          }
-        }
-        return { id, title, label: id, status: id === '宋世江湖' ? '持续迭代' as const : '典藏' as const, markdown, maps, revision: digest(markdown + JSON.stringify(maps)) };
-      }));
-      worlds.sort((a, b) => {
-        const ai = ORDER.indexOf(a.id), bi = ORDER.indexOf(b.id);
-        return (ai < 0 ? ORDER.length : ai) - (bi < 0 ? ORDER.length : bi) || a.id.localeCompare(b.id, 'zh-CN');
-      });
-      return { worlds, assets, revision: digest(worlds.map(world => `${world.id}:${world.revision}`).join('\n')) };
-  }
-
   async function scan(): Promise<Snapshot> {
     if (!scanPromise) {
       scanPromise = (async () => {
         let next: Snapshot;
         do {
           const currentGeneration = generation;
-          next = await readSnapshot();
+          next = await readSnapshot(root);
           scannedGeneration = currentGeneration;
         } while (!closed && scannedGeneration !== generation);
         return next;
@@ -124,7 +68,7 @@ export function worldsPlugin(directory: string): Plugin {
     if (pathname === '/api/worlds' && url.searchParams.get('refresh') === '1') await refresh(true);
     if (readError) return json(503, { error: '暂时无法读取本地文档，稍后重试。' });
     if (pathname === '/api/worlds') {
-      return json(200, { app: 'worlds-reader', identity, revision: snapshot.revision, worlds: snapshot.worlds.map(({ markdown: _markdown, ...info }) => info) });
+      return json(200, { ...manifestFor(snapshot, 'local'), identity });
     }
     if (pathname.startsWith('/api/worlds/')) {
       let id: string;

@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import type { Root, Element } from 'hast';
 import type { Chapter, ParsedWorld } from '../types';
 import { Icon } from './Icon';
+import { imageName } from '../asset-name';
 
 function sourceAnnotations(chapter: Chapter) {
   return () => (tree: Root) => {
@@ -29,9 +30,8 @@ export const MarkdownBody = memo(function MarkdownBody({ world, chapter, onMap, 
   return <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={annotations} skipHtml components={{
     table: ({ node: _node, children, ...props }) => <div className="table-scroll" role="region" aria-label="设定表格" tabIndex={0}><table {...props}>{children}</table></div>,
     img: ({ src, alt }) => {
-      let name = '';
-      try { name = decodeURIComponent(src ?? ''); } catch { /* Invalid image links are shown as unavailable. */ }
-      const image = world.maps.find(map => decodeURIComponent(new URL(map.url, window.location.origin).pathname.split('/').at(-1) ?? '') === name);
+      const name = imageName(src ?? '');
+      const image = name ? world.maps.find(map => map.name === name) : undefined;
       return image ? <button className="inline-map" onClick={() => onMap(image)} aria-label={`查看地图：${alt ?? image.alt}`}><img src={image.url} alt={alt ?? image.alt} draggable={false} /><span className="map-caption"><span>{alt ?? image.alt}</span><span><Icon name="expand" size={16} />全屏查看</span></span></button> : <span className="missing-image">图片暂不可用：{alt ?? name}</span>;
     },
     a: ({ node: _node, href, children, ...props }) => {

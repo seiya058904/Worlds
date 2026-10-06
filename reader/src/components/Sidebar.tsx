@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { Chapter, ParsedWorld, Section } from '../types';
+import type { Chapter, ParsedWorld, Section, SourceMode } from '../types';
 import type { SyncStatus } from '../useWorlds';
 import { Icon } from './Icon';
 import { SyncIndicator } from './SyncIndicator';
@@ -28,7 +28,7 @@ function SectionRow({ node, active, onChoose, depth = 0, filter }: { node: TocNo
 }
 function matches(node: TocNode, query: string): boolean { return node.title.includes(query) || node.children.some(child => matches(child, query)); }
 
-export function Sidebar({ world, chapter, activeSection, status, onChoose, onClose, mobile, hidden }: { world: ParsedWorld; chapter: Chapter; activeSection: string; status: SyncStatus; onChoose: (chapterId: string, sectionId?: string) => void; onClose: () => void; mobile: boolean; hidden: boolean }) {
+export function Sidebar({ world, chapter, activeSection, status, mode, onChoose, onClose, mobile, hidden }: { world: ParsedWorld; chapter: Chapter; activeSection: string; status: SyncStatus; mode: SourceMode; onChoose: (chapterId: string, sectionId?: string) => void; onClose: () => void; mobile: boolean; hidden: boolean }) {
   const panel = useRef<HTMLElement>(null);
   const close = useRef(onClose);
   close.current = onClose;
@@ -94,7 +94,7 @@ export function Sidebar({ world, chapter, activeSection, status, onChoose, onClo
         })}
         {filter && !world.chapters.some(item => item.title.includes(filter) || item.sections.some(section => section.title.includes(filter))) ? <p className="toc-empty">没有找到这个章节。</p> : null}
       </nav>
-      <div className="sidebar-footer"><SyncIndicator status={status} /></div>
+      <div className="sidebar-footer"><SyncIndicator status={status} mode={mode} /></div>
     </aside>
   </>;
 }

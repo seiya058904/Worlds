@@ -1,14 +1,16 @@
 import type { RootContent } from 'mdast';
 
+export type SourceMode = 'local' | 'online';
 export type WorldInfo = {
   id: string;
   title: string;
   label: string;
   status: '典藏' | '持续迭代';
   revision: string;
-  maps: { url: string; alt: string }[];
+  maps: { name: string; revision: string; url: string; alt: string }[];
 };
 export type WorldSource = WorldInfo & { markdown: string };
+export type WorldsManifest = { app: 'worlds-reader'; mode: SourceMode; revision: string; worlds: (WorldInfo & { source: string })[] };
 export type Section = { id: string; title: string; depth: number; offset: number };
 export type Chapter = {
   id: string;

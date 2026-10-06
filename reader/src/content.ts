@@ -81,6 +81,18 @@ export function searchWorlds(worlds: ParsedWorld[], query: string): SearchHit[] 
 
 export function restoreChapter(world: ParsedWorld, position?: ReadingPosition) {
   const exact = world.chapters.find(chapter => chapter.id === position?.chapterId);
+  if (exact) return { chapter: exact, missing: false };
+  const paragraph = position?.paragraph ? world.chapters.find(chapter => chapter.blocks.some(block => paragraphFingerprint(block.text) === paragraphFingerprint(position.paragraph))) : undefined;
+  const section = position?.sectionId ? world.chapters.find(chapter => chapter.sections.some(section => section.id === position.sectionId)) : undefined;
   const index = Number.isFinite(position?.chapterIndex) ? Math.max(0, Math.min(position!.chapterIndex, world.chapters.length - 1)) : 0;
-  return { chapter: exact ?? world.chapters[index], missing: Boolean(position && !exact) };
+  return { chapter: exact ?? paragraph ?? section ?? world.chapters[index], missing: Boolean(position && !exact) };
+}
+
+export function paragraphFingerprint(text: string) { return text.trim().replace(/\s+/g, ' ').slice(0, 140); }
+
+/** Prefer a paragraph over its heading; only a matched paragraph keeps its pixel offset. */
+export function readingAnchor(position: ReadingPosition, blocks: { text: string }[], sectionIds: string[]) {
+  const blockIndex = position.paragraph ? blocks.findIndex(block => paragraphFingerprint(block.text) === paragraphFingerprint(position.paragraph)) : -1;
+  if (blockIndex >= 0) return { blockIndex, sectionId: '', offset: position.offset };
+  return { blockIndex: -1, sectionId: sectionIds.includes(position.sectionId) ? position.sectionId : '', offset: 0 };
 }

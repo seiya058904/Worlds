@@ -1,10 +1,10 @@
-import type { ParsedWorld } from '../types';
+import type { ParsedWorld, SourceMode } from '../types';
 import type { SyncStatus } from '../useWorlds';
 import { Icon } from './Icon';
 import { SyncIndicator } from './SyncIndicator';
 
 const numerals = ['零', '一', '两', '三', '四', '五', '六', '七', '八', '九', '十'];
-export function Library({ worlds, status, onOpen, onSearch }: { worlds: ParsedWorld[]; status: SyncStatus; onOpen: (id: string) => void; onSearch: () => void }) {
+export function Library({ worlds, status, mode, onOpen, onSearch }: { worlds: ParsedWorld[]; status: SyncStatus; mode: SourceMode; onOpen: (id: string) => void; onSearch: () => void }) {
   return <div className="library">
     <header className="app-toolbar library-toolbar"><span className="brand">Worlds</span><button className="icon-button" aria-label="搜索所有世界" onClick={onSearch}><Icon name="search" size={25} /></button></header>
     <main className="library-content">
@@ -19,6 +19,6 @@ export function Library({ worlds, status, onOpen, onSearch }: { worlds: ParsedWo
         </button>)}
       </div>
     </main>
-    <footer className="library-footer"><SyncIndicator status={status} library /></footer>
+    <footer className="library-footer"><SyncIndicator status={status} mode={mode} library /></footer>
   </div>;
 }
