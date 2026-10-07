@@ -22,8 +22,37 @@ async function fixture(t: TestContext) {
   await write('未引用.png', Buffer.from([8, 9]));
   await write('不得公开.txt', 'private fixture');
   await write('.隐藏.md', '# hidden');
-  return { directory, write };
+  const remove = async (name: string) => { await unlink(path.join(directory, name)); files.delete(name); };
+  return { directory, write, remove };
 }
+
+test('任意新书、书名修改、移走书籍和新地图自动进入或退出发布索引', async t => {
+  const { directory, write, remove } = await fixture(t);
+  const original = await readSnapshot(directory, 'online');
+  await write('新世界.md', '# 任意书名\n\n## 新章\n![新地图](新地图.webp)\n');
+  await write('新地图.webp', Buffer.from([10, 11, 12]));
+  const added = await readSnapshot(directory, 'online');
+  assert.notEqual(added.revision, original.revision);
+  const book = added.worlds.find(world => world.id === '新世界')!;
+  assert.equal(book.title, '任意书名');
+  assert.equal(book.maps[0].name, '新地图.webp');
+  const result: any = await build({ configFile: false, root: fileURLToPath(new URL('..', import.meta.url)), base: './', plugins: [react(), staticContentPlugin(directory)], build: { write: false }, logLevel: 'silent' });
+  const output = result.output as { fileName: string; source?: string | Uint8Array }[];
+  const get = (name: string) => { const item = output.find(item => item.fileName === name); assert.ok(item, name); return Buffer.from(item.source!); };
+  const manifest = JSON.parse(get('content/manifest.json').toString('utf8'));
+  assert.ok(manifest.worlds.some((world: any) => world.id === '新世界'));
+  assert.equal(JSON.parse(get('content/worlds/新世界.json').toString('utf8')).markdown, book.markdown);
+  assert.deepEqual(get('content/assets/新地图.webp'), Buffer.from([10, 11, 12]));
+  await write('改名世界.md', book.markdown);
+  await remove('新世界.md');
+  const renamed = await readSnapshot(directory, 'online');
+  assert.ok(renamed.worlds.some(world => world.id === '改名世界'));
+  assert.ok(!renamed.worlds.some(world => world.id === '新世界'));
+  await remove('改名世界.md');
+  const removed = await readSnapshot(directory, 'online');
+  assert.equal(removed.revision, original.revision);
+  assert.ok(!removed.assets.has('新地图.webp'), '未再被引用的地图不进入发布产物');
+});
 
 test('static build emits a complete UTF-8 manifest, all four worlds and only referenced original maps', async t => {
   const { directory } = await fixture(t);
@@ -90,14 +119,15 @@ test('traversal, encoded separators, external URLs, HTML and disallowed extensio
   assert.deepEqual([...snapshot.assets.keys()], ['中文地图.png']);
 });
 
-test('real four documents are read byte-for-byte, with exactly the two original maps and no other repository content', async () => {
+test('当前所有文档与引用地图逐字节保留；书籍和地图数量随源文件变化', async () => {
   const directory = fileURLToPath(new URL('../../worlds', import.meta.url));
   const snapshot = await readSnapshot(directory, 'online');
-  assert.equal(snapshot.worlds.length, 4);
-  assert.equal(snapshot.assets.size, 2);
+  const documents = (await readdir(directory, { withFileTypes: true })).filter(entry => entry.isFile() && !entry.name.startsWith('.') && entry.name.endsWith('.md')).map(entry => entry.name.slice(0, -3)).sort();
+  assert.deepEqual(snapshot.worlds.map(world => world.id).sort(), documents);
+  assert.deepEqual([...snapshot.assets.keys()].sort(), [...new Set(snapshot.worlds.flatMap(world => world.maps.map(map => map.name)))].sort());
   for (const world of snapshot.worlds) assert.deepEqual(Buffer.from(world.markdown, 'utf8'), await readFile(path.join(directory, `${world.id}.md`)));
   for (const [name, asset] of snapshot.assets) assert.deepEqual(asset.bytes, await readFile(path.join(directory, name)));
   const manifest = manifestFor(snapshot, 'online');
   assert.ok(manifest.worlds.every(info => !info.source.includes('/api/') && info.maps.every(map => !map.url.includes('/api/'))));
-  assert.equal((await readdir(directory)).filter(name => name.endsWith('.md')).length, manifest.worlds.length);
+  assert.equal(documents.length, manifest.worlds.length);
 });

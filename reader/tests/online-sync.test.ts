@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { createWorldSync, contentUrl, syncInterval, type SyncStatus } from '../src/sync.ts';
-import { parseWorld } from '../src/content.ts';
+import { parseWorld, searchWorlds } from '../src/content.ts';
 import type { ParsedWorld, SourceMode, WorldSource, WorldsManifest } from '../src/types.ts';
 
 function harness(mode: SourceMode = 'online') {
@@ -32,6 +32,8 @@ function harness(mode: SourceMode = 'online') {
   return { sync, requests, publications, statuses, controller, manifest, get parses() { return parses; },
     update(ids: string[]) { revision += '-next'; sources = sources.map(world => ids.includes(world.id) ? { ...world, revision: `${world.revision}-next`, markdown: world.markdown + '\n新增段落。\n' } : world); },
     remove(id: string) { revision += '-removed'; sources = sources.filter(world => world.id !== id); },
+    add(id: string) { revision += '-added'; sources.push({ id, title: id, label: id, revision: `${id}-1`, markdown: `# ${id}\n\n## 新书章节\n新书正文。\n`, maps: [], status: '典藏' }); },
+    rewrite(id: string, markdown: string) { revision += '-rewritten'; sources = sources.map(world => world.id === id ? { ...world, revision: `${world.revision}-next`, markdown } : world); },
     fail(paths: string[]) { failures = new Set(paths); }, mismatch(value: boolean) { mismatch = value; }, malformed(value: boolean) { malformed = value; }, gate(value?: () => Promise<void>) { gate = value; } };
 }
 
@@ -97,6 +99,28 @@ test('unmounted sync cannot publish a delayed response or schedule another check
 test('world removal replaces the index atomically without reloading surviving world', async () => {
   const h = harness(); await h.sync.refresh(); const before = h.publications[0][0]; h.remove('乙'); await h.sync.refresh();
   assert.equal(h.publications[1].length, 1); assert.equal(h.publications[1][0], before); assert.equal(h.parses, 2);
+});
+
+test('新书与增删改章节原子同步；失败保留旧目录，恢复后搜索和目录一起更新', async () => {
+  const h = harness(); await h.sync.refresh(); const before = h.publications[0];
+  h.add('新书');
+  h.rewrite('乙', '# 乙\n\n## 改名章\n修改后的正文。\n\n## 新增章\n### 新节\n新增人物。\n');
+  h.fail([`/Worlds/content/worlds/${encodeURIComponent('新书')}.json`]);
+  await h.sync.refresh();
+  assert.equal(h.publications.length, 1);
+  assert.deepEqual(before[1].chapters.map(chapter => chapter.title), ['开篇', '章节']);
+  h.fail([]); await h.sync.refresh();
+  const after = h.publications.at(-1)!;
+  assert.deepEqual(after.map(world => world.id), ['甲', '乙', '新书']);
+  assert.equal(after[0], before[0]);
+  assert.deepEqual(after[1].chapters.map(chapter => chapter.title), ['开篇', '改名章', '新增章']);
+  assert.equal(after[1].chapters.at(-1)!.sections.at(-1)!.title, '新节');
+  assert.equal(searchWorlds(after, '新增人物')[0].chapterTitle, '新增章');
+  h.rewrite('乙', '# 乙\n\n## 保留章\n最终正文。\n');
+  h.remove('新书'); await h.sync.refresh();
+  assert.deepEqual(h.publications.at(-1)!.map(world => world.id), ['甲', '乙']);
+  assert.deepEqual(h.publications.at(-1)![1].chapters.map(chapter => chapter.title), ['开篇', '保留章']);
+  assert.deepEqual(searchWorlds(h.publications.at(-1)!, '新增人物'), []);
 });
 
 test('local mode retains its API, explicit disk reconciliation and five-second cadence', async () => {

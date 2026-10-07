@@ -1,29 +1,54 @@
 import assert from 'node:assert/strict';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { test } from 'node:test';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { parseWorld, restoreChapter, searchWorlds } from '../src/content.ts';
 import { MarkdownBody } from '../src/components/MarkdownBody.tsx';
 import type { WorldSource } from '../src/types.ts';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import { toString } from 'mdast-util-to-string';
 
 function source(markdown: string, id = '测试'): WorldSource { return { id, title: id, label: id, markdown, revision: 'test', status: '典藏', maps: [] }; }
 
-for (const [name, expected] of Object.entries({ 人界: [1, 8, 8], 西幻世界: [1, 7, 16], 星星联邦: [1, 8, 20], 宋世江湖: [2, 26, 537] })) {
+const directory = new URL('../../worlds/', import.meta.url);
+const documents = (await readdir(directory, { withFileTypes: true })).filter(entry => entry.isFile() && !entry.name.startsWith('.') && entry.name.endsWith('.md'));
+const parser = unified().use(remarkParse).use(remarkGfm);
+
+function assertComplete(markdown: string, name: string) {
+  const world = parseWorld(source(markdown, name));
+  assert.equal(world.markdown, markdown);
+  assert.equal(world.chapters.map(chapter => markdown.slice(chapter.start, chapter.end)).join(''), markdown);
+  const expected = parser.parse(markdown).children.filter(node => node.type === 'heading').map(node => ({ title: toString(node), depth: node.depth, offset: node.position!.start.offset! }));
+  const headings = world.chapters.flatMap(chapter => chapter.sections.map(section => ({ title: section.title, depth: section.depth, offset: chapter.start + section.offset })));
+  assert.deepEqual(headings, expected, '每个实际标题的文字、层级、顺序和原文位置均应保留');
+  const ids = world.chapters.flatMap(chapter => [chapter.id, ...chapter.sections.map(section => section.id)]);
+  assert.equal(new Set(ids).size, ids.length);
+  assert.equal(world.chapters[0].start, 0);
+  assert.equal(world.chapters.at(-1)!.end, markdown.length);
+  for (let i = 1; i < world.chapters.length; i++) assert.equal(world.chapters[i - 1].end, world.chapters[i].start);
+  return world;
+}
+
+for (const document of documents) {
+  const name = document.name.slice(0, -3);
   test(`${name}：完整原文与所有标题均保留`, async () => {
-    const markdown = await readFile(new URL(`../../worlds/${name}.md`, import.meta.url), 'utf8');
-    const world = parseWorld(source(markdown, name));
-    assert.equal(world.chapters.map(chapter => markdown.slice(chapter.start, chapter.end)).join(''), markdown);
-    const headings = world.chapters.flatMap(chapter => chapter.sections);
-    for (let i = 0; i < expected.length; i++) assert.equal(headings.filter(heading => heading.depth === i + 1).length, expected[i]);
-    assert.equal(new Set(headings.map(heading => heading.id)).size, headings.length);
-    assert.ok(world.chapters[0].markdown.startsWith(`# ${name}`));
-    if (name === '宋世江湖') {
-      const introduction = world.chapters.find(chapter => chapter.groupTitle === '江湖纪事' && chapter.title === '引言');
-      assert.ok(introduction?.markdown.includes('榜上只有名字，真正的江湖却在名字之间。'));
-    }
+    assertComplete(await readFile(new URL(document.name, directory), 'utf8'), name);
   });
 }
+
+test('扩写、改名、删章与新书不固定标题数量；分组引言仍属于正文', () => {
+  const original = '# 测试\n\n开篇正文。\n\n## 旧章\n### 小节\n原段落。\n\n# 第二部\n\n分组引言。\n\n## 后章\n末段。\n';
+  const expanded = original.replace('## 旧章', '## 改名章') + '\n## 新章\n### 新节\n#### 四级\n##### 五级\n###### 六级\n新增正文。\n';
+  const world = assertComplete(expanded, '任意新书');
+  assert.ok(world.chapters.find(chapter => chapter.groupTitle === '第二部' && chapter.title === '引言')?.markdown.includes('分组引言。'));
+  assertComplete(expanded.replace('## 改名章\n### 小节\n原段落。\n\n', ''), '任意新书');
+  assertComplete('新书名\n======\n\n第一章\n------\n\n正文。\n', '新书');
+  assertComplete(expanded.replaceAll('\n', '\r\n'), 'Windows 换行');
+  assertComplete('', '空书');
+});
 
 test('代码块中的伪标题不分章；同名小节和父级路径具有唯一定位', () => {
   const world = parseWorld(source('# 测试\n\n## 甲\n\n```md\n## 不应分章\n```\n\n### 重复\n甲\n\n### 重复\n乙\n\n## 乙\n\n### 重复\n丙\n'));
