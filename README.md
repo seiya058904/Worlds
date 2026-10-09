@@ -1,85 +1,156 @@
-# Worlds
+ <h1 align="center">🌌 Worlds</h1>
 
-**Four imagined universes. One evolving archive.**
+<p align="center">
+  <strong>Four universes. Countless histories. One living archive.</strong>
+</p>
 
-Worlds is a collection of original worldbuilding kept in Markdown and Git, with a quiet, read-only library for exploring its histories, civilizations, maps, and ideas. The worlds are the finished work—not drafts waiting to become novels or games.
+<p align="center">
+  An evolving library of imagined civilizations, histories, maps, and lore.<br>
+  Built in Markdown. Preserved with Git. Designed to be read.
+</p>
 
-**[📖 Open the library](https://seiya058904.github.io/Worlds/)** · [Explore the worlds](#explore-the-worlds) · [Read locally](#read-online-or-locally) · [Writing principles](#writing-and-canon)
+<p align="center">
+  <a href="https://seiya058904.github.io/Worlds/"><strong>📖 Enter the Library</strong></a>
+  &nbsp;·&nbsp;
+  <a href="#the-four-worlds">🗺️ Explore the Worlds</a>
+  &nbsp;·&nbsp;
+  <a href="#start-reading">🚀 Start Reading</a>
+  &nbsp;·&nbsp;
+  <a href="#for-developers">⚙️ For Developers</a>
+</p>
 
-> **The worlds are the work.** The manuscripts are the source of truth; the website is simply another way to read them.
+<p align="center">
+  <sub>FOUR WORLDS &nbsp; · &nbsp; MARKDOWN FIRST &nbsp; · &nbsp; GIT-VERSIONED &nbsp; · &nbsp; READ-ONLY LIBRARY</sub>
+</p>
 
-## Explore the worlds
+---
 
-Each world has its own setting, history, and internal logic. Select a world to read its complete source document, or open the [library](https://seiya058904.github.io/Worlds/) for a chapter-based reading experience.
+> **Not every world needs to become a novel. Some are worth building simply to exist.**
+>
+> *Worlds* is a personal worldbuilding archive. Its manuscripts—not a game, a story outline, or the reader application—are the work itself. The website opens a window into those worlds without changing their canon.
 
-| World | Inside the archive |
-| --- | --- |
-| **[人界](worlds/人界.md)** | A cultivation cosmos of nine major races, eight vast domains, imperial eras, and the legacies of emperors and Dao sovereigns. |
-| **[西幻世界](worlds/西幻世界.md)** *(working title)* | A high-fantasy continent with five principal races, a 1–100 level system, a barrier at level 70, and ten artifacts capable of shaping the world's rules. |
-| **[星星联邦](worlds/星星联邦.md)** *(Stellar Federation)* | A far-reaching interstellar federation: member civilizations, shared trade routes, postwar politics, and the divide between P-series and classified S-series technology. |
-| **[宋世江湖](worlds/宋世江湖.md)** | A Song-inspired martial world of schools, lineages, duels, regional rankings, the northern and southern lists, and an elusive all-under-heaven register. |
+<a name="the-four-worlds"></a>
+## 🗺️ The Four Worlds
 
-Every world is maintained as **one complete Markdown document** under [`worlds/`](worlds/). Its referenced maps remain alongside the writing. The reader does not create a second, editable version of the canon.
+Four independent settings, each maintained as **one complete Markdown manuscript**. Their original titles are preserved here.
 
-## Inside the library
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🌠 <a href="worlds/人界.md">人界</a></h3>
+      <p><sub>CULTIVATION · COSMIC HISTORY</sub></p>
+      <p>Nine major races across eight cosmic domains. Cultivation, imperial eras, ancient forbidden regions, and the legacies of emperors and Dao sovereigns shape a universe with a long and contested past.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>🏰 <a href="worlds/西幻世界.md">西幻世界</a></h3>
+      <p><sub>HIGH FANTASY · WORKING TITLE</sub></p>
+      <p>A continent of five principal races, a 1–100 level system, an ancient limit at level 70, and ten artifacts powerful enough to influence the rules of the world.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <h3>🚀 <a href="worlds/星星联邦.md">星星联邦</a></h3>
+      <p><sub>STELLAR FEDERATION · CIVILIZATION</sub></p>
+      <p>An interstellar federation of member civilizations, shared routes, vast industry, postwar politics, and a strategic divide between the established P-series and closely guarded S-series technologies.</p>
+    </td>
+    <td width="50%" valign="top">
+      <h3>⚔️ <a href="worlds/宋世江湖.md">宋世江湖</a></h3>
+      <p><sub>MARTIAL WORLD · LIVING CHRONICLE</sub></p>
+      <p>A Song-inspired martial world of rival schools, master–disciple lineages, regional rankings, northern and southern lists, and legendary figures whose stories survive as chronicles and rumor.</p>
+    </td>
+  </tr>
+</table>
 
-The library is designed for reading long, evolving documents without turning them into a database or a conventional wiki.
+The manuscripts and their referenced maps are the **single source of truth**. The library is a way to explore them, not a second copy of their content.
 
-- **Chapters and navigation:** browse an outline, jump between sections, and move to the previous or next chapter.
-- **Find a passage:** filter the contents or press `Ctrl+K` to search across worlds.
-- **Maps in context:** open referenced maps for full-screen inspection, zooming, and panning.
-- **A personal reading space:** adjust type, spacing, and reading preferences; the browser remembers your position.
-- **Updates without losing your place:** local edits can appear in the reader as you work; the published library checks for new deployed content and retains the last successfully loaded version when a refresh fails.
+## ✨ Inside the Reading Room
 
-> **Note:** Both the online library and the local reader are **read-only**. They do not edit world files, resolve lore conflicts, or write changes back to GitHub.
+A long-form reading experience built around the shape of the manuscripts—not around a conventional wiki or an editable database.
 
-## Read online or locally
+- 📚 **Chapter by chapter** — Browse a structured table of contents and move naturally between chapters.
+- 🔎 **Find a passage** — Filter the contents or press `Ctrl+K` to search across all four worlds.
+- 🗺️ **Explore original maps** — Open maps referenced by the manuscripts, with zoom, pan, and full-screen viewing.
+- 🌓 **Make reading comfortable** — Adjust type, spacing, and reading preferences; your browser remembers them.
+- 🔄 **Follow a living archive** — The local reader reflects edits, while the published site checks for new deployed revisions and tries to preserve your place.
+- 🛟 **Keep reading through interruptions** — If an update fails, the reader retains the last successfully loaded content rather than replacing it with an incomplete revision.
 
-**Online:** [Open Worlds · Library](https://seiya058904.github.io/Worlds/). New source changes appear online after they have been committed, pushed, and successfully deployed through the existing GitHub Actions workflow.
+> [!IMPORTANT]
+> **The reader is read-only.** Neither the published library nor the local reading interface can edit the manuscripts, settle conflicting lore, or publish changes to GitHub.
 
-**On Windows:** run [`启动阅读器.cmd`](启动阅读器.cmd) from the repository root. It starts the local reader at **http://127.0.0.1:4175/**. The first launch may require an internet connection to install locked dependencies; keep the terminal open while reading.
+<a name="start-reading"></a>
+## 🚀 Start Reading
 
-**For development:** use Node.js 22.12+ (Node 24 LTS recommended) and run these commands from the repository root:
+### 🌐 Online library
 
-```
+**[Open Worlds · Library →](https://seiya058904.github.io/Worlds/)**
+
+Read the published collection in your browser. Changes to source Markdown appear online only after they have been committed, pushed, and successfully deployed.
+
+### 💻 Local library (Windows)
+
+1. Open the repository folder.
+2. Double-click **[`启动阅读器.cmd`](启动阅读器.cmd)**.
+3. Read at **http://127.0.0.1:4175/**.
+
+The first launch may need internet access to install the locked reader dependencies. Keep the launcher window open while using the local library. A supported Node.js installation is required (22.12+; Node 24 LTS recommended).
+
+<a name="for-developers"></a>
+## ⚙️ For Developers
+
+The reader uses **React, TypeScript, and Vite**. The world manuscripts stay in [`worlds/`](worlds/); reader code, tests, and generated output stay under `reader/`.
+
+<details>
+<summary><strong>🛠️ Development, tests, and production preview</strong></summary>
+
+From the repository root:
+
+```powershell
 cd reader
 npm ci
 npm run dev
 ```
 
-The development server listens at `http://127.0.0.1:4175/`. To check the reader or create a production build, run from `reader/`:
+For validation and a production preview (from `reader/`):
 
-```
+```powershell
 npm test
 npm run build
 npm run preview
 ```
 
-Production preview uses `http://127.0.0.1:4176/`. Serve the built site over HTTP rather than opening its HTML file directly.
+- Development: `http://127.0.0.1:4175/`
+- Production preview: `http://127.0.0.1:4176/`
+- Serve the build over HTTP; opening the generated HTML directly is not a supported reading workflow.
+- Deployment is handled by the existing GitHub Actions workflow after changes reach `main`.
 
-## Writing and canon
+</details>
 
-The archive is organized around a few deliberate boundaries:
+### Repository map
 
-1. **Capture ideas first.** Put unassigned notes, fragments, and uncertain material in [`INBOX.md`](INBOX.md).
-2. **Keep each world together.** Edit the appropriate file in [`worlds/`](worlds/) instead of splitting its characters, history, geography, and factions into separate databases.
-3. **Distinguish facts from proposals.** A suggestion from an AI assistant is not canon until the author accepts it. Preserve unresolved contradictions and competing accounts rather than silently choosing one.
-4. **Use Git for history.** Review changes before committing. GitHub stores revisions, while the library presents the published source as a readable experience.
-
-The author retains authority over the setting. AI may help organize, analyze, and refine material, but it does not independently establish official history. See [`AGENTS.md`](AGENTS.md) for the full editing and validation rules.
-
-## Repository guide
-
-```
-worlds/          Canonical manuscripts and their referenced maps
-INBOX.md         Unsorted notes and uncertain ideas
-reader/          Read-only library, local scanner, build, and tests
-启动阅读器.cmd    Windows reader launcher
-AGENTS.md        Rules for AI-assisted editing and maintenance
+```text
+worlds/           Canonical manuscripts and referenced maps
+INBOX.md          Unsorted ideas and uncertain notes
+reader/           Read-only app, content scanner, build and tests
+启动阅读器.cmd     Windows local reader launcher
+AGENTS.md         AI-assisted editing and repository rules
 ```
 
-Worlds is a personal worldbuilding archive, not a novel generator, a content-management platform, or a browser-based world editor. No repository-wide open-source license is currently specified.
+## ✍️ Authorship & Canon
 
-## 项目边界
+The author owns the worlds and decides what is canon. AI may assist with organizing, analyzing, or polishing material, but it cannot independently make a proposal official.
 
-本仓库用于**长期维护多世界观的个人档案**，不是小说自动生成器、故事项目管理系统或开放编辑平台。公开阅读入口与作者的编辑权限是两回事；请保留原有设定来源和文字的上下文。
+**Capture → Organize → Verify → Commit**
+
+1. **Capture** ideas in [`INBOX.md`](INBOX.md) when their place in a world is uncertain.
+2. **Organize** confirmed material inside its world's single Markdown manuscript.
+3. **Verify** the distinction between established canon, unresolved contradictions, and possible extensions.
+4. **Commit** deliberate changes with Git; the library reflects the published state rather than editing it.
+
+The full collaboration rules and validation boundaries are documented in [`AGENTS.md`](AGENTS.md).
+
+---
+
+<p align="center">
+  <sub>Worldbuilding is the work. The library is the doorway.</sub><br>
+  <sub>No repository-wide open-source license has been declared.</sub>
+</p>
