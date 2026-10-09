@@ -1,70 +1,84 @@
-# Worlds · 藏书
+# Worlds
 
-**不是小说工程，而是世界观本身的长期档案。**
+**Four imagined universes. One evolving archive.**
 
-以 Markdown 保存完整世界观，以 Git 保留历史，以只读网页阅读器呈现章节、地图与长期积累的设定。
+Worlds is a collection of original worldbuilding kept in Markdown and Git, with a quiet, read-only library for exploring its histories, civilizations, maps, and ideas. The worlds are the finished work—not drafts waiting to become novels or games.
 
-**[📖 打开在线阅读器](https://seiya058904.github.io/Worlds/)** · [世界目录](#四个世界) · [本地启动](#在本地阅读) · [作者与 AI 的边界](#项目边界)
+**[📖 Open the library](https://seiya058904.github.io/Worlds/)** · [Explore the worlds](#explore-the-worlds) · [Read locally](#read-online-or-locally) · [Writing principles](#writing-and-canon)
 
+> **The worlds are the work.** The manuscripts are the source of truth; the website is simply another way to read them.
 
-> **这里的作品是世界观本身。** 人物、文明、地区、力量体系和历史不必最终变成小说或游戏。AI 可以帮助整理、分析与补全草稿，但设定的最终裁定权属于作者。
+## Explore the worlds
 
-## 四个世界
+Each world has its own setting, history, and internal logic. Select a world to read its complete source document, or open the [library](https://seiya058904.github.io/Worlds/) for a chapter-based reading experience.
 
-这里每个世界对应 `worlds/` 中的一份 Markdown 原文；阅读器只是只读呈现，目录并不是另一套设定数据库。
-
-| 世界 | 探索方向 |
+| World | Inside the archive |
 | --- | --- |
-| **[人界](worlds/人界.md)** | 九大种族、八域宇宙与大帝谱系，记录从洪荒至开盛的修仙历史。 |
-| **[西幻世界（暂定名）](worlds/西幻世界.md)** | 五族共存、等级系统、规律宝器与跨时代历史；正式世界名尚未确定。 |
-| **[星星联邦](worlds/星星联邦.md)** | 超星团战争之后的星际秩序、P/S 系列、S1 计划与档案文献。 |
-| **[宋世江湖](worlds/宋世江湖.md)** | 架空宋世江湖：门派传承、地方与南北武榜、天下武林总谱及武林纪事；持续迭代。 |
+| **[人界](worlds/人界.md)** | A cultivation cosmos of nine major races, eight vast domains, imperial eras, and the legacies of emperors and Dao sovereigns. |
+| **[西幻世界](worlds/西幻世界.md)** *(working title)* | A high-fantasy continent with five principal races, a 1–100 level system, a barrier at level 70, and ten artifacts capable of shaping the world's rules. |
+| **[星星联邦](worlds/星星联邦.md)** *(Stellar Federation)* | A far-reaching interstellar federation: member civilizations, shared trade routes, postwar politics, and the divide between P-series and classified S-series technology. |
+| **[宋世江湖](worlds/宋世江湖.md)** | A Song-inspired martial world of schools, lineages, duels, regional rankings, the northern and southern lists, and an elusive all-under-heaven register. |
 
-每个世界对应 `worlds/` 中的**一个完整 Markdown 文件**。世界观内容和引用的原地图是唯一权威来源；网页不保存第二份可编辑正文。
+Every world is maintained as **one complete Markdown document** under [`worlds/`](worlds/). Its referenced maps remain alongside the writing. The reader does not create a second, editable version of the canon.
 
-## 阅读器
+## Inside the library
 
-- **夜间藏书室**：以章节目录阅读长篇 Markdown，支持上一章/下一章。
-- **快速检索**：目录筛选与 `Ctrl+K` 全库搜索，定位到具体世界和小节。
-- **阅读设置**：字体、字号、行距与进度保存在浏览器本地。
-- **地图查看**：引用地图可放大、缩小、拖动和全屏观察。
-- **增量同步**：本地编辑可自动反映到阅读器；线上站点基于部署内容检查修订版本。
-- **阅读位置恢复**：内容更新时尽可能恢复原段落或就近章节，离线失联后保留已加载内容。
+The library is designed for reading long, evolving documents without turning them into a database or a conventional wiki.
 
-> 在线站点与本地阅读器均为**只读**。网站本身不修改 `worlds/*.md`，也不提供浏览器写回仓库功能。
+- **Chapters and navigation:** browse an outline, jump between sections, and move to the previous or next chapter.
+- **Find a passage:** filter the contents or press `Ctrl+K` to search across worlds.
+- **Maps in context:** open referenced maps for full-screen inspection, zooming, and panning.
+- **A personal reading space:** adjust type, spacing, and reading preferences; the browser remembers your position.
+- **Updates without losing your place:** local edits can appear in the reader as you work; the published library checks for new deployed content and retains the last successfully loaded version when a refresh fails.
 
-## 在本地阅读
+> **Note:** Both the online library and the local reader are **read-only**. They do not edit world files, resolve lore conflicts, or write changes back to GitHub.
 
-Windows 下双击根目录的 **[`启动阅读器.cmd`](启动阅读器.cmd)**，然后打开 `http://127.0.0.1:4175/`。首次启动可能需要联网安装锁定依赖；运行时请保留本地服务窗口。
+## Read online or locally
 
-开发者可从 `reader/` 目录运行：
+**Online:** [Open Worlds · Library](https://seiya058904.github.io/Worlds/). New source changes appear online after they have been committed, pushed, and successfully deployed through the existing GitHub Actions workflow.
 
-```powershell
+**On Windows:** run [`启动阅读器.cmd`](启动阅读器.cmd) from the repository root. It starts the local reader at **http://127.0.0.1:4175/**. The first launch may require an internet connection to install locked dependencies; keep the terminal open while reading.
+
+**For development:** use Node.js 22.12+ (Node 24 LTS recommended) and run these commands from the repository root:
+
+```
 cd reader
 npm ci
 npm run dev
+```
+
+The development server listens at `http://127.0.0.1:4175/`. To check the reader or create a production build, run from `reader/`:
+
+```
 npm test
 npm run build
 npm run preview
 ```
 
-需要符合仓库要求的 Node.js 版本（推荐 Node 24 LTS）。生产预览默认使用 `http://127.0.0.1:4176/`。构建版本应通过 HTTP 服务浏览，不能假定双击 `reader/dist/index.html` 即可正确加载。
+Production preview uses `http://127.0.0.1:4176/`. Serve the built site over HTTP rather than opening its HTML file directly.
 
-## 内容如何维护
+## Writing and canon
 
-```text
-worlds/*.md      各世界的权威正文及 Markdown 引用的原地图
-INBOX.md         尚未归类的灵感、草稿、零散记录
-reader/          只读阅读器、扫描器、静态导出与测试
-AGENTS.md        AI 协作与世界观维护的约束
+The archive is organized around a few deliberate boundaries:
+
+1. **Capture ideas first.** Put unassigned notes, fragments, and uncertain material in [`INBOX.md`](INBOX.md).
+2. **Keep each world together.** Edit the appropriate file in [`worlds/`](worlds/) instead of splitting its characters, history, geography, and factions into separate databases.
+3. **Distinguish facts from proposals.** A suggestion from an AI assistant is not canon until the author accepts it. Preserve unresolved contradictions and competing accounts rather than silently choosing one.
+4. **Use Git for history.** Review changes before committing. GitHub stores revisions, while the library presents the published source as a readable experience.
+
+The author retains authority over the setting. AI may help organize, analyze, and refine material, but it does not independently establish official history. See [`AGENTS.md`](AGENTS.md) for the full editing and validation rules.
+
+## Repository guide
+
+```
+worlds/          Canonical manuscripts and their referenced maps
+INBOX.md         Unsorted notes and uncertain ideas
+reader/          Read-only library, local scanner, build, and tests
+启动阅读器.cmd    Windows reader launcher
+AGENTS.md        Rules for AI-assisted editing and maintenance
 ```
 
-1. **记录**：不确定归属的原始想法先存入 [`INBOX.md`](INBOX.md)，无需立即结构化。
-2. **整理**：明确属于某个世界的材料，在阅读全文和现有设定后归入对应世界文件。
-3. **核实**：区分正式设定、候选推论、矛盾传闻；不要让 AI 悄悄改写已确定的历史。
-4. **保存**：以 Git 记录修改历史；推送到 GitHub 后，既有 Pages 流程会构建线上只读版本。
-
-阅读器使用内容摘要检查变化，避免无意义重复加载；网络请求失败时保留已成功加载的版本。具体实现和边界见 [`AGENTS.md`](AGENTS.md)。
+Worlds is a personal worldbuilding archive, not a novel generator, a content-management platform, or a browser-based world editor. No repository-wide open-source license is currently specified.
 
 ## 项目边界
 
