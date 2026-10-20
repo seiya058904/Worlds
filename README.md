@@ -1,4 +1,4 @@
- <h1 align="center">🌌 Worlds</h1>
+<h1 align="center">🌌 Worlds</h1>
 
 <p align="center">
   <strong>Four universes. Countless histories. One living archive.</strong>
@@ -32,31 +32,54 @@
 <a name="the-four-worlds"></a>
 ## 🗺️ The Four Worlds
 
-Four independent settings, each maintained as **one complete Markdown manuscript**. Their original titles are preserved here.
+Four independent settings, each maintained as **one complete Markdown manuscript**. The original-language titles remain authoritative in the source files; the English names below are descriptive labels for readers.
 
 <table>
   <tr>
     <td width="50%" valign="top">
-      <h3>🌠 <a href="worlds/人界.md">人界</a></h3>
+      <h3>🌠 <a href="worlds/%E4%BA%BA%E7%95%8C.md">The Human Realm</a></h3>
       <p><sub>CULTIVATION · COSMIC HISTORY</sub></p>
       <p>Nine major races across eight cosmic domains. Cultivation, imperial eras, ancient forbidden regions, and the legacies of emperors and Dao sovereigns shape a universe with a long and contested past.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>🏰 <a href="worlds/西幻世界.md">西幻世界</a></h3>
+      <h3>🏰 <a href="worlds/%E8%A5%BF%E5%B9%BB%E4%B8%96%E7%95%8C.md">The Fantasy World</a></h3>
       <p><sub>HIGH FANTASY · WORKING TITLE</sub></p>
       <p>A continent of five principal races, a 1–100 level system, an ancient limit at level 70, and ten artifacts powerful enough to influence the rules of the world.</p>
     </td>
   </tr>
   <tr>
     <td width="50%" valign="top">
-      <h3>🚀 <a href="worlds/星星联邦.md">星星联邦</a></h3>
+      <h3>🚀 <a href="worlds/%E6%98%9F%E6%98%9F%E8%81%94%E9%82%A6.md">The Star Federation</a></h3>
       <p><sub>STELLAR FEDERATION · CIVILIZATION</sub></p>
       <p>An interstellar federation of member civilizations, shared routes, vast industry, postwar politics, and a strategic divide between the established P-series and closely guarded S-series technologies.</p>
     </td>
     <td width="50%" valign="top">
-      <h3>⚔️ <a href="worlds/宋世江湖.md">宋世江湖</a></h3>
+      <h3>⚔️ <a href="worlds/%E5%AE%8B%E4%B8%96%E6%B1%9F%E6%B9%96.md">Song-Era Jianghu</a></h3>
       <p><sub>MARTIAL WORLD · LIVING CHRONICLE</sub></p>
       <p>A Song-inspired martial world of rival schools, master–disciple lineages, regional rankings, northern and southern lists, and legendary figures whose stories survive as chronicles and rumor.</p>
+    </td>
+  </tr>
+</table>
+
+### 🗺️ Maps from the Manuscripts
+
+These maps are part of the actual worldbuilding archive, not stock art or generated website mockups. Open either image to view the full original.
+
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="worlds/%E8%A5%BF%E5%B9%BB%E4%B8%96%E7%95%8C%E5%9C%B0%E5%9B%BE.png">
+        <img src="worlds/%E8%A5%BF%E5%B9%BB%E4%B8%96%E7%95%8C%E5%9C%B0%E5%9B%BE.png" width="100%" alt="Original map of the fantasy setting kept with the source manuscripts" />
+      </a>
+      <br />
+      <sub>The Fantasy World · Original setting map</sub>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="worlds/%E6%98%9F%E6%98%9F%E8%81%94%E9%82%A6%E7%96%86%E5%9F%9F%E4%B8%8E%E5%85%AC%E5%85%B1%E8%88%AA%E9%81%93%E6%80%BB%E8%A7%88.png">
+        <img src="worlds/%E6%98%9F%E6%98%9F%E8%81%94%E9%82%A6%E7%96%86%E5%9F%9F%E4%B8%8E%E5%85%AC%E5%85%B1%E8%88%AA%E9%81%93%E6%80%BB%E8%A7%88.png" width="100%" alt="Original map showing the Star Federation and its shared interstellar routes" />
+      </a>
+      <br />
+      <sub>The Star Federation · Territories and shared routes</sub>
     </td>
   </tr>
 </table>
@@ -89,7 +112,7 @@ Read the published collection in your browser. Changes to source Markdown appear
 ### 💻 Local library (Windows)
 
 1. Open the repository folder.
-2. Double-click **[`启动阅读器.cmd`](启动阅读器.cmd)**.
+2. Double-click the bundled **[Windows reader launcher](%E5%90%AF%E5%8A%A8%E9%98%85%E8%AF%BB%E5%99%A8.cmd)** (a `.cmd` script).
 3. Read at **http://127.0.0.1:4175/**.
 
 The first launch may need internet access to install the locked reader dependencies. Keep the launcher window open while using the local library. A supported Node.js installation is required (22.12+; Node 24 LTS recommended).
@@ -131,7 +154,7 @@ npm run preview
 worlds/           Canonical manuscripts and referenced maps
 INBOX.md          Unsorted ideas and uncertain notes
 reader/           Read-only app, content scanner, build and tests
-启动阅读器.cmd     Windows local reader launcher
+Windows launcher  Bundled local reader startup script (see link above)
 AGENTS.md         AI-assisted editing and repository rules
 ```
 
