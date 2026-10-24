@@ -29,7 +29,7 @@
 >
 > *Worlds* is a personal worldbuilding archive. Its manuscripts—not a game, a story outline, or the reader application—are the work itself. The website opens a window into those worlds without changing their canon.
 
-<a name="the-four-worlds"></a>
+<a id="the-four-worlds"></a>
 ## 🗺️ The Four Worlds
 
 Four independent settings, each maintained as **one complete Markdown manuscript**. The original-language titles remain authoritative in the source files; the English names below are descriptive labels for readers.
@@ -100,7 +100,7 @@ A long-form reading experience built around the shape of the manuscripts—not a
 > [!IMPORTANT]
 > **The reader is read-only.** Neither the published library nor the local reading interface can edit the manuscripts, settle conflicting lore, or publish changes to GitHub.
 
-<a name="start-reading"></a>
+<a id="start-reading"></a>
 ## 🚀 Start Reading
 
 ### 🌐 Online library
@@ -117,7 +117,7 @@ Read the published collection in your browser. Changes to source Markdown appear
 
 The first launch may need internet access to install the locked reader dependencies. Keep the launcher window open while using the local library. A supported Node.js installation is required (22.12+; Node 24 LTS recommended).
 
-<a name="for-developers"></a>
+<a id="for-developers"></a>
 ## ⚙️ For Developers
 
 The reader uses **React, TypeScript, and Vite**. The world manuscripts stay in [`worlds/`](worlds/); reader code, tests, and generated output stay under `reader/`.
