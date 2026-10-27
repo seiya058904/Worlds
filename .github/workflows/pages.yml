@@ -3,6 +3,10 @@ name: Deploy Worlds to GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'AGENTS.md'
+      - 'INBOX.md'
+      - '**/readme-*'
   workflow_dispatch:
 
 permissions:
