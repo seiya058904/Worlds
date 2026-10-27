@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 320" role="img" aria-labelledby="title desc">
+  <title id="title">Four manuscripts on a shelf</title>
+  <desc id="desc">Original illustration of four differently marked books in a dark reading room.</desc>
+  <rect width="1200" height="320" fill="#18212c"/>
+  <path d="M56 266h1088" stroke="#bf9971" stroke-width="3"/>
+  <g transform="translate(156 44)"><rect width="166" height="222" rx="5" fill="#334351"/><path d="M18 0v222" stroke="#94a6aa" stroke-width="3"/><circle cx="92" cy="109" r="39" fill="none" stroke="#e9e1d2" stroke-width="3"/><path d="M92 70v78M53 109h78" stroke="#e9e1d2" stroke-width="3"/></g>
+  <g transform="translate(367 44)"><rect width="166" height="222" rx="5" fill="#31584f"/><path d="M18 0v222" stroke="#80a293" stroke-width="3"/><path d="M46 140l45-70 45 70z" fill="none" stroke="#e9e1d2" stroke-width="4"/><path d="M62 140l29-43 29 43" fill="none" stroke="#bf9971" stroke-width="3"/></g>
+  <g transform="translate(578 44)"><rect width="166" height="222" rx="5" fill="#29455f"/><path d="M18 0v222" stroke="#7d9caf" stroke-width="3"/><circle cx="92" cy="109" r="20" fill="#e9e1d2"/><ellipse cx="92" cy="109" rx="57" ry="25" fill="none" stroke="#bf9971" stroke-width="3" transform="rotate(-20 92 109)"/></g>
+  <g transform="translate(789 44)"><rect width="166" height="222" rx="5" fill="#5b443f"/><path d="M18 0v222" stroke="#b3917c" stroke-width="3"/><path d="M60 75l64 64m0-64-64 64" stroke="#e9e1d2" stroke-width="5"/><circle cx="92" cy="107" r="12" fill="#bf9971"/></g>
+  <circle cx="1017" cy="77" r="4" fill="#e9e1d2"/><circle cx="1062" cy="124" r="3" fill="#e9e1d2"/><circle cx="1030" cy="188" r="4" fill="#e9e1d2"/>
+</svg>
