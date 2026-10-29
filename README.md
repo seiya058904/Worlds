@@ -1,6 +1,10 @@
 <h1 align="center">🌌 Worlds</h1>
 
 <p align="center">
+  <img src="readme-cover.svg" width="100%" alt="An original celestial atlas with four symbolic worlds" />
+</p>
+
+<p align="center">
   <strong>Four universes. Countless histories. One living archive.</strong>
 </p>
 
