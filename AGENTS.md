@@ -4,7 +4,7 @@
 
 Worlds is a private multi-worldbuilding Markdown notebook, maintained with Git. The worldbuilding itself is the project; do not turn it into a novel-production system. The author owns final canon decisions. AI acts as an editor, organizer, analyst, and worldbuilding assistant.
 
-The night-mode web reader is a read-only presentation of this notebook, available locally and at `https://seiya058904.github.io/Worlds/`. Markdown and its referenced maps remain the only content source. Keep app code separate from world content. GitHub Pages deployment through the existing workflow is authorized; do not add web editing or other hosting/publishing without an explicit request.
+The night-mode web reader is a read-only presentation of this notebook, available locally and at `https://seiya058904.github.io/Worlds/`. Markdown and its referenced maps remain the only content source. Keep app code separate from world content. The existing workflow deploys to GitHub Pages; deployment and other publishing require explicit authorization for the current task. Do not add web editing or other hosting without an explicit request.
 
 ## Repository structure
 
@@ -55,3 +55,8 @@ Make focused changes only. Preserve unrelated user modifications. Daily project 
 ## AI boundaries
 
 Read `README.md` and this file before working. Read the target world file before editing it. Do not infer a target world when the source is ambiguous; place the material in `INBOX.md`. Do not silently promote proposals, resolve formal conflicts, restore abandoned Story/novel plans, or add unrelated structure. Keep world files suitable for a complete human reading rather than turning headings into database fields.
+
+## Browser tool selection
+
+- Prefer Ego Browser for exploratory navigation, visual review and interactive checks when available. Use Playwright for repeatable regression, CI, isolation, request interception or other automation requiring its APIs; combine tools when useful. If Ego is unavailable, use a suitable existing browser tool.
+- Keep this repository's required browser commands, versions, profiles and safety boundaries; an exploratory check does not replace required automated tests. Do not alter real user data or production state for testing. Report the tools, coverage and any untested paths.
