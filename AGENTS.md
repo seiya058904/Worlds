@@ -20,4 +20,4 @@
 
 ## Safety & Delivery
 - Read/write UTF-8. Never open or output `.env`, `.dev.vars`, private keys, keystores, tokens, cookies, or credentials.
-- Daily commits may go directly on `main` with specific messages; stage explicit paths only. Deploying, publishing, dependency updates, or external actions require explicit authorization. After an authorized Pages release, verify the exact commit's Actions run, live manifest, document/map bytes, and interactions.
+- Daily commits may go directly on `main` with specific messages. After an authorized Pages release, verify the exact commit's Actions run, live manifest, document/map bytes, and interactions.
